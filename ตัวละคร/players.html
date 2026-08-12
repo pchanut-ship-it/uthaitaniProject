@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แนะนำตัวละคร</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: linear-gradient(135deg, #f6f8fd 0%, #f1f5f9 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 3rem 1rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-weight: 600;
+            font-size: 2.8rem;
+            color: #1e293b;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 0.5rem;
+        }
+        
+        header p {
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2.5rem;
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 20px 40px rgba(52, 152, 219, 0.15);
+        }
+
+        .card img {
+            width: 140px;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 1.5rem;
+            border: 4px solid #f1f5f9;
+            transition: all 0.4s ease;
+            background-color: #e2e8f0;
+        }
+
+        .card:hover img {
+            transform: scale(1.08);
+            border-color: #3b82f6;
+        }
+
+        .card h3 {
+            font-size: 1.4rem;
+            color: #0f172a;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .card:hover h3 {
+            color: #3b82f6;
+        }
+
+        /* Modal Styling */
+        .modal {
+            visibility: hidden;
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(15, 23, 42, 0.5); 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease, visibility 0.3s;
+        }
+
+        .modal.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: #ffffff;
+            padding: 3rem 2.5rem;
+            border-radius: 30px;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            transform: scale(0.7) translateY(20px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        .close-button {
+            color: #94a3b8;
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            font-size: 48px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: color 0.3s, transform 0.3s;
+            line-height: 1;
+        }
+
+        .close-button:hover {
+            color: #ef4444;
+            transform: rotate(90deg);
+        }
+
+        #modalImg {
+            width: 180px;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 6px solid #eff6ff;
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.2);
+            margin-bottom: 1.5rem;
+        }
+
+        #modalName {
+            font-size: 2rem;
+            color: #1e293b;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        #modalDesc {
+            font-size: 1.15rem;
+            color: #475569;
+            line-height: 1.6;
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>แนะนำตัวละคร</h1>
+        <p>คลิกที่รูปเพื่อดูรายละเอียด</p>
+    </header>
+
+    <main>
+        <div class="grid-container" id="characterGrid">
+            <!-- Cards will be generated here by JavaScript -->
+        </div>
+    </main>
+
+    <!-- Modal -->
+    <div id="characterModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeBtn">&times;</span>
+            <img id="modalImg" src="" alt="Character Image">
+            <h2 id="modalName"></h2>
+            <p id="modalDesc"></p>
+        </div>
+    </div>
+    
+    <script>
+        const characters = [
+            { id: 'baiploo', name: 'ใบพลู', image: 'ใบพลู.png', role: 'เด็ก ป.1 ช่างสังเกต ชอบเรียนรู้คำศัพท์ต่าง ๆ' },
+            { id: 'tonkla', name: 'ต้นกล้า', image: 'ต้นกล้า.png', role: 'เพื่อนที่ใจดีของทุก ๆ คน ชอบช่วยคิด และวางแผนต่าง ๆ' },
+            { id: 'mali', name: 'มะลิ', image: 'มะลิ.png', role: 'เพื่อนสนิทใบพลู เป็นคนร่าเริง ชอบวาดรูป' },
+            { id: 'pan', name: 'ปั้น', image: 'ปั้น.png', role: 'เด็กซนแต่จริงใจ เป็นคนทำให้เกิดเหตุวุ่น ๆ หลายครั้ง' },
+            { id: 'krudao', name: 'ครูดาว', image: 'ครูดาว.png', role: 'ครูประจำชั้นของเด็ก ๆ สอนวิชาภาษาไทย และใจดีมาก ๆ' },
+            { id: 'yainim', name: 'ยายนิ่ม', image: 'ยายนิ่ม.png', role: 'ยายของใบพลู ทำอาหารเก่ง ชอบเล่านิทานสนุกให้เด็ก ๆ ฟัง' },
+            { id: 'lungchang', name: 'ลุงช่าง', image: 'ลุงช่าง.png', role: 'ช่างประจำชุมชน ช่วยซ่อมแซมสิ่งต่าง ๆ ในชุมชน' },
+            { id: 'chaotaem', name: 'เจ้าแต้ม', image: 'เจ้าแต้ม.png', role: 'ลูกหมาของโรงเรียน ซนมาก ชอบเล่นกับเด็ก ๆ และชอบคาบของไปซ่อนเป็นประจำ' }
+        ];
+
+        const gridContainer = document.getElementById('characterGrid');
+        const modal = document.getElementById('characterModal');
+        const modalImg = document.getElementById('modalImg');
+        const modalName = document.getElementById('modalName');
+        const modalDesc = document.getElementById('modalDesc');
+        const closeBtn = document.getElementById('closeBtn');
+
+        // Generate Cards
+        characters.forEach(char => {
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.innerHTML = `
+                <img src="${char.image}" alt="${char.name}" loading="lazy">
+                <h3>${char.name}</h3>
+            `;
+            
+            // Add click event to open modal
+            card.addEventListener('click', () => {
+                modalImg.src = char.image;
+                modalName.textContent = char.name;
+                modalDesc.textContent = char.role;
+                modal.classList.add('show');
+            });
+            
+            gridContainer.appendChild(card);
+        });
+
+        // Close modal functions
+        const closeModal = () => {
+            modal.classList.remove('show');
+            // Give time for transition to finish before resetting content
+            setTimeout(() => {
+                if(!modal.classList.contains('show')){
+                    modalImg.src = '';
+                }
+            }, 300);
+        };
+
+        closeBtn.addEventListener('click', closeModal);
+
+        // Close when clicking outside of modal content
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Close on Escape key press
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && modal.classList.contains('show')) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
